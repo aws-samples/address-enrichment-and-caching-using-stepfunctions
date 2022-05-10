@@ -26,7 +26,8 @@ This project addresses the concerns from the customers, how they can improve the
 
 ## Highlevel Architecture
 
-TBD
+![image](https://user-images.githubusercontent.com/20495779/167682555-c7656967-f328-4ae9-970a-28999c0f0771.png)
+
 
   1.	The *Scatter* Lambda function takes a data set from the S3 bucket labeled *input* and breaks it into equal sized shards. 
   2.	The *Process* Lambda function takes each shard from the *pre-processed* bucket and performs Address Enrichment in parallel calling the [Amazon Location Service Places API](https://docs.aws.amazon.com/location-places/latest/APIReference/Welcome.html) and storing 
