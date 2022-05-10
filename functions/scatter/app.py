@@ -14,9 +14,7 @@ import time
 ###  then splits the file into shards of equal size,
 ###  renames the files, and puts them into a "raw" bucket
 
-# input_bucket = os.environ.get('INPUT_BUCKET')
 destination_bucket = os.environ.get('RAW_SHARDS_BUCKET')
-# destination_bucket = '2-scatter-gather-1-us-east-2-953053785568'
 s3_client = boto3.client('s3')
 lambda_client = boto3.client('lambda')
 
@@ -37,14 +35,10 @@ def lambda_handler(event, context):
     ------
         dict: response from Step functions start execution
     """
-    #get object from s3 and read the data
-    print(event)
-    print(type(event))
     source_bucket = event['Payload']['detail']['bucket']['name']
     source_object = event['Payload']['detail']['object']['key']
 
     if source_object.endswith(".csv"):
-        # source_object = urllib.parse.unquote_plus(event['detail']['object']['key'], encoding='utf-8')
         
         response = s3_client.get_object(Bucket=source_bucket, Key=source_object)
         data = pd.read_csv(response.get("Body"))
@@ -62,7 +56,7 @@ def lambda_handler(event, context):
         response_lambda['Payload']={}
         response_lambda['Payload']['Shards']=[]
         # response_lambda['Payload']['Bucket']=destination_bucket
-        print(response)
+
         for i in shards:
             if count < (number_of_shards-1):
                 with io.StringIO() as csv_buffer:
@@ -82,8 +76,6 @@ def lambda_handler(event, context):
                     
                     print(shard)
                     print(response_lambda['Payload']['Shards'])
-                    # print(response['Shards']['number_label'] = )
-                    # response['Shards']['number_label'] = shard
                     item = {'bucket': destination_bucket, 'shard': shard}
                     response_lambda['Payload']['Shards'].append(item)
                 print(number_of_shards)
@@ -103,7 +95,7 @@ def lambda_handler(event, context):
                         print(f"Successful S3 put_object response. Status - {status}")
                     else:
                         print(f"Unsuccessful S3 put_object response. Status - {status}")
-                    # response['Shards']['number_label'] = shard
+
                     item = {'bucket': destination_bucket, 'shard': shard}
                     response_lambda['Payload']['Shards'].append(item)
         
