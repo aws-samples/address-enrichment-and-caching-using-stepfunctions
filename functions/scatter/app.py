@@ -80,9 +80,9 @@ def lambda_handler(event, context):
                     response_lambda['Payload']['Shards'].append(item)
                 print(number_of_shards)
                 print(count)
-            # wait 5 seconds, then take the last shard and write it to S3 with a unique suffix identifier of "_SHARD_LAST"
+            # Take the last shard and write it to S3 with a unique suffix identifier of "_SHARD_LAST"
             else:
-                time.sleep(5)
+                #time.sleep(5)
                 with io.StringIO() as csv_buffer:
                     shards[-1].to_csv(csv_buffer, index=False)
                     shard = source_object[:-4] + "_SHARD_" + "LAST" + ".csv"
