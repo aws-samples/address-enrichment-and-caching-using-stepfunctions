@@ -1,6 +1,6 @@
 # Address Enrichment and Caching Using AWS Step Functions by Leveraging Amazon Location Service
 
-Traditional methods of performing address validation on geospatial datasets can be expensive and time consuming. 
+Traditional methods of performing address enrichment on geospatial datasets can be expensive and time consuming. 
 
 Using [Amazon Location Service](https://aws.amazon.com/location/) with [AWS Step Functions](https://aws.amazon.com/step-functions/) in a serverless data processing pipeline, you may achieve significant performance improvements and cost savings on address validation jobs that use geospatial data. 
 
