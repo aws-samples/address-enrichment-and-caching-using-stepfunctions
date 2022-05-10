@@ -1,0 +1,210 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  amazon-scatter-gather-using-stepfunctions
+
+  SAM template for Amazon Location Service Scatter Gather using Step Functions
+
+Globals: 
+  Function:
+    Runtime: python3.9
+    MemorySize: 128
+    Timeout: 15
+
+Resources:
+  LocationScatterGatherStateMachine:
+    Type: AWS::Serverless::StateMachine # More info about State Machine Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-statemachine.html
+    Properties:
+      DefinitionUri: statemachine/location_service_scatter_gather.asl.yaml
+      DefinitionSubstitutions:
+        ScatterFunctionArn: !GetAtt ScatterFunction.Arn
+        ProcessFunctionArn: !GetAtt ProcessFunction.Arn
+        GatherFunctionArn: !GetAtt GatherFunction.Arn
+      Events:
+        Trigger:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              source:
+                - "aws.s3"
+              detail-type:
+                - "Object Created"
+              detail:
+                bucket:
+                  name:
+                    - !Sub "input-${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
+      Policies: # Find out more about SAM policy templates: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ScatterFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ProcessFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref GatherFunction
+        -  Version: "2012-10-17"
+           Statement:
+             - Effect: Allow
+               Action:
+                 - "cloudwatch:*"
+                 - "logs:*"
+               Resource: "*"
+      Type: STANDARD
+      Logging:
+        Destinations:
+          - CloudWatchLogsLogGroup:
+              LogGroupArn: !GetAtt StateMachineLogGroup.Arn
+        IncludeExecutionData: false
+        Level: 'ALL'
+##########################################################################
+#  STEP FUNCTION LOG GROUP                                               #
+##########################################################################
+  StateMachineLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join [ "/", [ "stepfunctions", StateMachineScatterGather]]
+
+############################
+  InputBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: "Delete"
+    Properties:
+      BucketName: !Sub "input-${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
+      NotificationConfiguration:
+        EventBridgeConfiguration:
+          EventBridgeEnabled: True  
+  RawBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: "Delete"
+    Properties:
+      BucketName: !Sub "raw-${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
+  ProcessedBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: "Delete"
+    Properties:
+      BucketName: !Sub "processed-${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
+  DestinationBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: "Delete"
+    Properties:
+      BucketName: !Sub "destination-${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
+    
+    
+  ScatterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/scatter
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Timeout: 300
+      Description: Takes object inputed to InputBucket, shards into X number of files, and puts those files into the RawBucket
+      Environment:
+        Variables:
+          INPUT_BUCKET: !Sub "input-${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
+          RAW_SHARDS_BUCKET: !Sub "raw-${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
+
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Sub "input-${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
+        - S3WritePolicy:
+            BucketName: !Sub "raw-${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
+
+      Architectures:
+        - x86_64
+                    
+  ProcessFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/process
+      Handler: app.lambda_handler
+      Description: Takes object from RawDataShards bucket, processes those shards in parrallel, and puts shards into Processed Shards bucket
+      MemorySize: 128
+      Timeout: 900
+      Environment:
+        Variables: 
+          RAW_SHARDS_BUCKET: !Sub "raw-${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
+          PROCESSED_SHARDS_BUCKET: !Sub "processed-${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
+          LOCATION_INDEX: !Ref LocationPlaceIndex
+          DDB_TABLE_NAME: !Ref LocationCacheDDBTable
+          # STATE_MACHINE_ARN: !GetAtt LocationScatterGatherStateMachine.Arn
+      Policies: 
+        - S3ReadPolicy:
+            BucketName: !Sub "raw-${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
+        - S3WritePolicy: 
+            BucketName: !Sub "processed-${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
+        - DynamoDBWritePolicy:
+            TableName: !Ref LocationCacheDDBTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref LocationCacheDDBTable
+        - Version: '2012-10-17' 
+          Statement:
+              #The following stanzas are required to invoke nested workflows 
+            - Effect: Allow
+              Action: 
+                - geo:SearchPlaceIndexForText
+                - geo:SearchPlaceIndexForPosition
+              Resource: !GetAtt LocationPlaceIndex.Arn
+
+  GatherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/gather
+      Handler: app.lambda_handler
+      Description: Takes objects from processed data shards once the last file is PUT, appends them together to create a single final dataset
+      Environment: 
+        Variables:
+          PROCESSED_SHARDS_BUCKET: !Sub "processed-${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
+          DESTINATION_BUCKET: !Sub "destination-${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
+      Policies: 
+        - S3ReadPolicy:
+            BucketName: !Sub "processed-${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
+        - S3WritePolicy:
+            BucketName: !Sub "destination-${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
+
+  LocationPlaceIndex:
+    Type: AWS::Location::PlaceIndex
+    Properties:
+      DataSource: "Esri"
+      DataSourceConfiguration:
+        IntendedUse: "Storage"
+      IndexName: !Sub "${AWS::StackName}-${AWS::Region}-${AWS::AccountId}-parselocation"
+
+  LocationCacheDDBTable:
+    Type: AWS::DynamoDB::Table # More info about SimpleTable Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-simpletable.html
+    Properties:
+      AttributeDefinitions:
+        - 
+          AttributeName: "id"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "id"
+          KeyType: "HASH"
+      TableName: "NaiveLocationCacheDDBTable"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "60"
+        WriteCapacityUnits: "60"
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+Outputs:
+  LocationScatterGatherStateMachineArn:
+    Description: "Amazon Location Serivce Scatter Gather State Machine ARN"
+    Value: !Ref LocationScatterGatherStateMachine
+  InputBucketName: 
+    Description: "Input Bucket Name"
+    Value: !Ref InputBucket
+  RawBucketName: 
+    Description: "Raw Bucket Name"
+    Value: !Ref RawBucket
+  ProcessedBucketName: 
+    Description: "Processed Bucket Name"
+    Value: !Ref ProcessedBucket
+  DestinationBucketName: 
+    Description: "Destination Bucket Name"
+    Value: !Ref DestinationBucket
+  LocationPlacesIndexName:
+    Description: "Places Index"
+    Value: !Ref LocationPlaceIndex
+  LocationCacheDDBTableName:
+    Description: "DynamodDB Table (Naive Cache)"
+    Value: !Ref LocationCacheDDBTable

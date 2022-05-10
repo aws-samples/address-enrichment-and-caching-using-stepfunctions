@@ -1,0 +1,56 @@
+Comment: Scatter Gather State Machine for Amazon Location Service
+StartAt: Scatter Function
+States:
+  Scatter Function:
+    Type: Task
+    Resource: "${ScatterFunctionArn}"
+    OutputPath: $.Payload
+    Parameters:
+      Payload.$: $
+    Retry:
+      - ErrorEquals:
+          - Lambda.ServiceException
+          - Lambda.AWSLambdaException
+          - Lambda.SdkClientException
+        IntervalSeconds: 2
+        MaxAttempts: 6
+        BackoffRate: 2
+    Next: Process
+  Process:
+    Type: Map
+    ItemsPath: $.Shards
+    Iterator:
+      StartAt: Process Function
+      States:
+        Process Function:
+          Type: Task
+          Resource: "${ProcessFunctionArn}"
+          OutputPath: $.Payload
+          Parameters:
+            Payload.$: $
+          Retry:
+            - ErrorEquals:
+                - Lambda.ServiceException
+                - Lambda.AWSLambdaException
+                - Lambda.SdkClientException
+              IntervalSeconds: 2
+              MaxAttempts: 6
+              BackoffRate: 2
+          End: true
+    MaxConcurrency: 100
+    Next: Gather Function
+  Gather Function:
+    Type: Task
+    Resource: "${GatherFunctionArn}"
+    OutputPath: $.Payload
+    Parameters:
+      Payload.$: $
+    Retry:
+      - ErrorEquals:
+          - Lambda.ServiceException
+          - Lambda.AWSLambdaException
+          - Lambda.SdkClientException
+        IntervalSeconds: 2
+        MaxAttempts: 6
+        BackoffRate: 2
+    End: true

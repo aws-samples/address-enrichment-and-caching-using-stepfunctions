@@ -1,11 +1,116 @@
-## My Project
+# Address Enrichment and Caching Using AWS Step Functions by Leveraging Amazon Location Service
 
-TODO: Fill this README out!
+Traditional methods of performing address validation on geospatial datasets can be expensive and time consuming. 
 
-Be sure to:
+Using Amazon Location Service with AWS Step Functions in a serverless data processing pipeline, you may achieve significant performance improvements and cost savings on address validation jobs that use geospatial data. 
 
-* Change the title in this README
-* Edit your repository description on GitHub
+This sample is an evolution to the already available sample, which only uses AWS Lambda functions (can be found [here](https://github.com/aws-samples/amazon-location-service-serverless-address-validation)).
+
+Some of the improvements in this project includes:
+
+- Using Step Functions for Orchestration
+- Using DynamoDB as a Naive cache to store location results, which helps improve performance and optimize costs
+
+The repository contains a SAM tempalte for deploying a Serverless Address Enrichment pipeline using:
+- Amazon S3 (for object storage), 
+- AWS Lambda (for serverless compute), 
+- AWS Step Functions (for Orchestration), 
+- Amazon DynamoDB (for Caching) 
+- Amazon Location Service (for Geocoding/Reverse Geocoding)
+
+It also uses sample data sourced from publicly available datasets that you can deploy and use to test the application. 
+
+This project addresses the concerns from the customers, how they can improve the performance of their application and at the same time optimize their costs.
+
+
+
+## Highlevel Architecture
+
+TBD
+
+  1.	The *Scatter* Lambda function takes a data set from the S3 bucket labeled *input* and breaks it into equal sized shards. 
+  2.	The *Process* Lambda function takes each shard from the *pre-processed* bucket and performs Address Enrichment in parallel calling the [Amazon Location Service Places API](https://docs.aws.amazon.com/location-places/latest/APIReference/Welcome.html) and storing 
+  3.	The *Gather* Lambda function takes each shard from the *post-processed* bucket and appends them into a complete dataset with additional address information.
+
+
+## Deploying the Project
+### Prerequistes:
+
+To use the SAM CLI, you need the following tools:
+  - [AWS account](https://aws.amazon.com/free/?trk=ps_a134p000003yBfsAAE&trkCampaign=acq_paid_search_brand&sc_channel=ps&sc_campaign=acquisition_US&sc_publisher=google&sc_category=core&sc_country=US&sc_geo=NAMER&sc_outcome=acq&sc_detail=%2Baws%20%2Baccount&sc_content=Account_bmm&sc_segment=438195700994&sc_medium=ACQ-P%7CPS-GO%7CBrand%7CDesktop%7CSU%7CAWS%7CCore%7CUS%7CEN%7CText&s_kwcid=AL!4422!3!438195700994!b!!g!!%2Baws%20%2Baccount&ef_id=Cj0KCQjwsuP5BRCoARIsAPtX_wEmxImXtbdvL3n4ntAafj32KMc_sXL9Z-o8FyXVQzPk7w__h2FMje0aAhOFEALw_wcB:G:s&s_kwcid=AL!4422!3!438195700994!b!!g!!%2Baws%20%2Baccount&all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all) 
+  - AWS SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+  - Python 3.9 or later - [download the latest of version of python](https://www.python.org/downloads/) 
+  - An [AWS Identity and Access Managment](https://aws.amazon.com/iam/) role with appropriate access
+
+### This Sample Includes: 
+  - *template.yaml*: Contains the AWS SAM template that defines you applications AWS resources, which includes a Place Index for Amazon Location Service
+  - *statemachine/location_service_scatter_gather.asl.yaml*: Contains the Step Functions ASL definition
+  - *functions/scatter/*: Contains the Lambda handler logic behind the scatter function and its requirements 
+  - *functions/process/*: Contains the Lambda handler logic for the processor function which calls the Amazon Location Service Places API to perform address enrichment
+  - *functions/gather/*: Contains the Lambda handler logic for the gather function which appends all of processed data into a complete dataset
+  - *tests/*: TBD - Needs to contain test cases
+
+### Deploy the Sam-App:
+1. Use `git clone https://github.com/aws-samples/address-enrichment-and-caching-using-stepfunctions` to clone the repository to your environment where AWS SAM and python are installed.
+2. Use ``https://github.com/aws-samples/address-enrichment-and-caching-using-stepfunctions``to change into the project directory containing the template.yaml file SAM uses to build your application. 
+3. If you have Docker installed, you can use ``sam build --use-container``, otherwise, you can use ``sam build`` to build your application using SAM. You should see:
+
+```
+Build Succeeded
+
+Built Artifacts  : .aws-sam/build
+Built Template   : .aws-sam/build/template.yaml
+
+Commands you can use next
+=========================
+[*] Invoke Function: sam local invoke
+[*] Test Function in the Cloud: sam sync --stack-name {stack-name} --watch
+[*] Deploy: sam deploy --guided
+```
+
+
+4. Use `sam deploy --guided` to deploy the application to your AWS account. Enter custom values for the application parameters. 
+
+```
+Configuring SAM deploy
+======================
+
+        Looking for config file [samconfig.toml] :  Not found
+
+        Setting default arguments for 'sam deploy'
+        =========================================
+        Stack Name [sam-app]: address-enrichment
+        AWS Region [us-west-2]: us-east-1
+        #Shows you resources changes to be deployed and require a 'Y' to initiate deploy
+        Confirm changes before deploy [y/N]: Y
+        #SAM needs permission to be able to create roles to connect to the resources in your template
+        Allow SAM CLI IAM role creation [Y/n]: Y
+        #Preserves the state of previously provisioned resources when an operation fails
+        Disable rollback [y/N]: N
+        Save arguments to configuration file [Y/n]: Y
+        SAM configuration file [samconfig.toml]: 
+        SAM configuration environment [default]: 
+```
+
+## Testing the Application
+
+Download the below samples locally, unzip the files, and upload the CSV to your *input S3 bucket* to trigger the adddress enrichment pipeline.
+
+Geocoding: *City of Hartford, CT Business Listing Dataset*
+ - https://catalog.data.gov/dataset/city-of-hartford-business-listing
+ 
+Reverse Geocoding: *Miami Housing Dataset*
+ - https://www.kaggle.com/deepcontractor/miami-housing-dataset
+
+
+## Security
+
+See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+
+## License
+
+This library is licensed under the MIT-0 License. See the LICENSE file.
+
 
 ## Security
 
