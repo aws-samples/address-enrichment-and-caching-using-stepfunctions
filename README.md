@@ -2,7 +2,7 @@
 
 Traditional methods of performing address enrichment on geospatial datasets can be expensive and time consuming. 
 
-Using [Amazon Location Service](https://aws.amazon.com/location/) with [AWS Step Functions](https://aws.amazon.com/step-functions/) in a serverless data processing pipeline, you may achieve significant performance improvements and cost savings on address validation jobs that use geospatial data. 
+Using [Amazon Location Service](https://aws.amazon.com/location/) with [AWS Step Functions](https://aws.amazon.com/step-functions/) for orchestration and with [Amazon DynamoDB](https://aws.amazon.com/dynamodb) for caching in a serverless data processing pipeline, you may achieve significant performance improvements and cost savings on address enrichment jobs that use geospatial data. 
 
 This sample is an evolution to the already available sample, which only uses Lambda functions (can be found [here](https://github.com/aws-samples/amazon-location-service-serverless-address-validation)).
 
