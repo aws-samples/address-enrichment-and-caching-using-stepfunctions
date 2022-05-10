@@ -82,7 +82,6 @@ def lambda_handler(event, context):
                 print(count)
             # Take the last shard and write it to S3 with a unique suffix identifier of "_SHARD_LAST"
             else:
-                #time.sleep(5)
                 with io.StringIO() as csv_buffer:
                     shards[-1].to_csv(csv_buffer, index=False)
                     shard = source_object[:-4] + "_SHARD_" + "LAST" + ".csv"
