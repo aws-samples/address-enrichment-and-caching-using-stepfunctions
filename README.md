@@ -2,21 +2,21 @@
 
 Traditional methods of performing address validation on geospatial datasets can be expensive and time consuming. 
 
-Using Amazon Location Service with AWS Step Functions in a serverless data processing pipeline, you may achieve significant performance improvements and cost savings on address validation jobs that use geospatial data. 
+Using [Amazon Location Service](https://aws.amazon.com/location/) with [AWS Step Functions](https://aws.amazon.com/step-functions/) in a serverless data processing pipeline, you may achieve significant performance improvements and cost savings on address validation jobs that use geospatial data. 
 
-This sample is an evolution to the already available sample, which only uses AWS Lambda functions (can be found [here](https://github.com/aws-samples/amazon-location-service-serverless-address-validation)).
+This sample is an evolution to the already available sample, which only uses Lambda functions (can be found [here](https://github.com/aws-samples/amazon-location-service-serverless-address-validation)).
 
 Some of the improvements in this project includes:
 
-- Using Step Functions for Orchestration
-- Using DynamoDB as a Naive cache to store location results, which helps improve performance and optimize costs
+- Using [AWS Step Functions](https://aws.amazon.com/step-functions/) for Orchestration
+- Using [Amazon DynamoDB](https://aws.amazon.com/dynamodb) as a Naive cache to store location results, which helps improve performance and optimize costs
 
 The repository contains a SAM tempalte for deploying a Serverless Address Enrichment pipeline using:
-- Amazon S3 (for object storage), 
-- AWS Lambda (for serverless compute), 
-- AWS Step Functions (for Orchestration), 
-- Amazon DynamoDB (for Caching) 
-- Amazon Location Service (for Geocoding/Reverse Geocoding)
+- [Amazon S3](https://aws.amazon.com/s3/) (for object storage), 
+- [AWS Lambda](https://aws.amazon.com/lambda/) (for serverless compute), 
+- [AWS Step Functions](https://aws.amazon.com/step-functions/) (for Orchestration), 
+- [Amazon DynamoDB](https://aws.amazon.com/dynamodb) (for Caching) 
+- [Amazon Location Service](https://aws.amazon.com/location/) (for Geocoding/Reverse Geocoding)
 
 It also uses sample data sourced from publicly available datasets that you can deploy and use to test the application. 
 
@@ -47,9 +47,9 @@ To use the SAM CLI, you need the following tools:
   - *template.yaml*: Contains the AWS SAM template that defines you applications AWS resources, which includes a Place Index for Amazon Location Service
   - *statemachine/location_service_scatter_gather.asl.yaml*: Contains the Step Functions ASL definition
   - *functions/scatter/*: Contains the Lambda handler logic behind the scatter function and its requirements 
-  - *functions/process/*: Contains the Lambda handler logic for the processor function which calls the Amazon Location Service Places API to perform address enrichment
+  - *functions/process/*: Contains the Lambda handler logic for the processor function which calls the [Amazon Location Service Places API](https://docs.aws.amazon.com/location-places/latest/APIReference/Welcome.html) to perform address enrichment
   - *functions/gather/*: Contains the Lambda handler logic for the gather function which appends all of processed data into a complete dataset
-  - *tests/*: TBD - Needs to contain test cases
+  - *tests/*: TBD - Needs to contain test cases (Unit and Integration Tests)
 
 ### Deploy the Sam-App:
 1. Use `git clone https://github.com/aws-samples/address-enrichment-and-caching-using-stepfunctions` to clone the repository to your environment where AWS SAM and python are installed.
