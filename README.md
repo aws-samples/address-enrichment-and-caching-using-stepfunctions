@@ -70,7 +70,7 @@ Commands you can use next
 ```
 
 
-4. Use `sam deploy --guided` to deploy the application to your AWS account. Enter custom values for the application parameters. 
+4. Use `sam deploy --guided` to deploy the application to your AWS account. Enter responses based on your environment:
 
 ```
 Configuring SAM deploy
