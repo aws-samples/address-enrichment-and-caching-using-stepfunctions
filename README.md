@@ -105,16 +105,18 @@ Reverse Geocoding: *Miami Housing Dataset*
 
 ## Cleanup
 
+In order to avoid incurring any charges, this section talks about cleaning up the AWS resources, which got created when following through this sample. 
+
 ### Pre-req:
 Make sure you `empty` the following S3 buckets, before deleting the clean-up:
-- input-<stack-name>-<aws-region>-<aws-accountnumber>
-- raw-<stack-name>-<aws-region>-<aws-accountnumber>
-- processed-<stack-name>-<aws-region>-<aws-accountnumber>
-- destination-<stack-name>-<aws-region>-<aws-accountnumber>
+- input-`stack-name`-`aws-region`-`aws-accountnumber`
+- raw-`stack-name`-`aws-region`-`aws-accountnumber`
+- processed-`stack-name`-`aws-region`-`aws-accountnumber`
+- destination-`stack-name`-`aws-region`-`aws-accountnumber`
 
 
 ### Method 1:
-If you would like to cleanup your resource from your AWS Account, you can use ``sam delete``:
+To delete the resources you created as part of this sample, you can run ``sam delete``:
 
 ```
 sam delete                                                                                                                                                     
