@@ -103,6 +103,40 @@ Geocoding: *City of Hartford, CT Business Listing Dataset*
 Reverse Geocoding: *Miami Housing Dataset*
  - https://www.kaggle.com/deepcontractor/miami-housing-dataset
 
+## Cleanup
+
+### Pre-req:
+Make sure you `empty` the following S3 buckets, before deleting the clean-up:
+- input-<stack-name>-<aws-region>-<aws-accountnumber>
+- raw-<stack-name>-<aws-region>-<aws-accountnumber>
+- processed-<stack-name>-<aws-region>-<aws-accountnumber>
+- destination-<stack-name>-<aws-region>-<aws-accountnumber>
+
+
+### Method 1:
+If you would like to cleanup your resource from your AWS Account, you can use ``sam delete``:
+
+```
+sam delete                                                                                                                                                     
+        Are you sure you want to delete the stack address-enrichment in the region us-east-1 ? [y/N]: y
+        Are you sure you want to delete the folder address-enrichment in S3 which contains the artifacts? [y/N]: y
+        - Deleting S3 object with key address-enrichment/c2710045fb8c4c4d77e47fba2f9754e4
+        - Deleting S3 object with key address-enrichment/c5ca75d7c52419e4077a3c030d76d812
+        - Deleting S3 object with key address-enrichment/04c2cdceeee06f8998eccf77fc6ffb9b
+        - Deleting S3 object with key address-enrichment/f1e2091b2a434fd87f023b603e23fe10
+        - Deleting S3 object with key address-enrichment/5a46e427cf72552a09e714f3a5c16461.template
+        - Deleting Cloudformation stack address-enrichment
+
+Deleted successfully
+```
+### Method 2:
+Alternatively, you can delete the AWS CloudFormation Stack by going to you AWS Console.
+
+
+or you can go to the AWS CloudFormation console to delete the stack:
+
+
+
 
 ## Security
 
