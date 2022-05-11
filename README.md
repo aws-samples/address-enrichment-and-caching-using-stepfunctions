@@ -108,11 +108,11 @@ Reverse Geocoding: *Miami Housing Dataset*
 In order to avoid incurring any charges, this section talks about cleaning up the AWS resources, which got created when following through this sample. 
 
 ### Pre-req:
-Make sure you `empty` the following S3 buckets, before deleting the clean-up:
-- input-`stack-name`-`aws-region`-`aws-accountnumber`
-- raw-`stack-name`-`aws-region`-`aws-accountnumber`
-- processed-`stack-name`-`aws-region`-`aws-accountnumber`
-- destination-`stack-name`-`aws-region`-`aws-accountnumber`
+Make sure you `empty` the following S3 buckets before deleting the Cloud Formation Stack (*as the deletion will fail for non-empty buckets*):
+- *input*-`stack-name`-`aws-region`-`aws-accountnumber`
+- *raw*-`stack-name`-`aws-region`-`aws-accountnumber`
+- *processed*-`stack-name`-`aws-region`-`aws-accountnumber`
+- *destination*-`stack-name`-`aws-region`-`aws-accountnumber`
 
 
 ### Method 1:
