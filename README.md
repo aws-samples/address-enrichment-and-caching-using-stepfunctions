@@ -132,11 +132,7 @@ sam delete
 Deleted successfully
 ```
 ### Method 2:
-Alternatively, you can delete the AWS CloudFormation Stack by going to you AWS Console.
-
-
-or you can go to the AWS CloudFormation console to delete the stack:
-
+Alternatively, you can delete the AWS CloudFormation Stack by logging in to your AWS Console and navigating to [AWS CloudFormation](https://aws.amazon.com/cloudformation/) service. Then select **Stacks**. After selecting the Stack you want to delete, click on **Delete** button on top right.
 
 
 
