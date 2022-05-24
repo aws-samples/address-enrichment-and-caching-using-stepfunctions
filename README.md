@@ -53,7 +53,7 @@ To use the SAM CLI, you need the following tools:
 
 ### Deploy the Sam-App:
 1. Use `git clone https://github.com/aws-samples/address-enrichment-and-caching-using-stepfunctions` to clone the repository to your environment where AWS SAM and python are installed.
-2. Use ``https://github.com/aws-samples/address-enrichment-and-caching-using-stepfunctions``to change into the project directory containing the template.yaml file SAM uses to build your application. 
+2. Use ``cd address-enrichment-and-caching-using-stepfunctions``to change into the project directory containing the template.yaml file SAM uses to build your application. 
 3. If you have Docker installed, you can use ``sam build --use-container``, otherwise, you can use ``sam build`` to build your application using SAM. You should see:
 
 ```
